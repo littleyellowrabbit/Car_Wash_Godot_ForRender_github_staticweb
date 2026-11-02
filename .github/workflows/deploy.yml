@@ -1,0 +1,43 @@
+name: Deploy Godot Web to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main # 當你推送程式碼到 main 分支時會自動觸發
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 【核心步驟】這行指令會去拿你後台的 RENDER_BACKEND_URL
+      # 並在網頁的 <head> 標籤下方自動塞入： <script>window.RENDER_BACKEND_URL = "你的網址";</script>
+      - name: Inject GitHub Environment Variable into HTML
+        env:
+          ENV_SERVER_URL: ${{ vars.RENDER_BACKEND_SERVER_URL }}
+          ENV_WEB_URL: ${{ vars.RENDER_BACKEND_WEB_URL }}
+        run: |
+          sed -i '/<head>/a <script>window.RENDER_BACKEND_SERVER_URL = "'"$ENV_SERVER_URL"'";<\/script>' index.html
+          sed -i '/<head>/a <script>window.RENDER_BACKEND_WEB_URL = "'"$ENV_WEB_URL"'";<\/script>' index.html
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.' # 上傳當前目錄的所有網頁檔案（包含 index.html, wasm 等）
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
