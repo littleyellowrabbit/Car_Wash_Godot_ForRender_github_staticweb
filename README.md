@@ -16,6 +16,9 @@ Source code default setting:
 Source Code: FastAPI PostgreSQL Redis Godot
 
 
+
+If you initial web page there may wait a second because render is free plan to take a time open program.
+
 If you want to try login
 
 Test22
